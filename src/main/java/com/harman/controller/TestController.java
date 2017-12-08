@@ -1,4 +1,4 @@
-package com.harman.test.controller;
+package com.harman.controller;
 
 import org.json.JSONObject;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -7,28 +7,25 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.harman.Model.MariaModel;
+
 @RestController
 @RequestMapping("/cloudApp")
 public class TestController {
 
-	@RequestMapping(value = "/test", method = RequestMethod.GET)
-	public String displayLogin() {
+	@RequestMapping(value = "/read", method = RequestMethod.GET)
+	public String readRecords(String device_id) {
 		System.out.println("******************************");
-		// String returnStr = new Calculater().getDataFromMongo();
-		return "Success";
+		MariaModel mariaModel = MariaModel.getInstance();
+		String responseResult = mariaModel.getDeviceInformation(device_id);
+		return responseResult;
 	}
 
-	/*
-	 * @RequestMapping(value = "/seeData", method = RequestMethod.POST)
-	 * public @ResponseBody String getNewElement(){
-	 * 
-	 * String retVal = "ok"; return "success"; }
-	 */
 	@RequestMapping(value = "/saveData", method = RequestMethod.POST)
-	public @ResponseBody String saveData(@RequestBody String test) {
+	public @ResponseBody String saveData(@RequestBody String requestBody) {
 		JSONObject retunResponse = new JSONObject();
 		try {
-			JSONObject jsonObject = new JSONObject(test);
+			JSONObject jsonObject = new JSONObject(requestBody);
 			String device_id = jsonObject.getString("device_id");
 			String device_model = jsonObject.getString("device_model");
 			String operations_name = jsonObject.getString("operations_name");
@@ -36,8 +33,8 @@ public class TestController {
 			String fw_version = jsonObject.getString("fw_version");
 			String sw_version = jsonObject.getString("sw_version");
 			String connection = jsonObject.getString("connection");
-			Calculater calculater = new Calculater();
-			String response = calculater.updateRealTimeMariaDB(device_id, device_model, operations_name,
+			MariaModel mariaModel = new MariaModel();
+			String response = mariaModel.insertDeviceInformation(device_id, device_model, operations_name,
 					operations_params, fw_version, sw_version, connection);
 			System.out.println(response);
 			retunResponse.put("status", response);
@@ -53,16 +50,3 @@ public class TestController {
 		return retunResponse.toString();
 	}
 }
-
-/*
- * public String saveData(String device_id, String device_model, String
- * operations_name, String operations_params, String fw_version, String
- * sw_version, String connection) {
- * 
- * Calculater calculater = new Calculater(); String response =
- * calculater.updateRealTimeMariaDB(device_id, device_model, operations_name,
- * operations_params, fw_version, sw_version, connection);
- * System.out.println(response); return response; }
- * 
- * }
- */
