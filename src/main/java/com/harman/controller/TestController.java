@@ -8,13 +8,14 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.harman.Model.MariaModel;
+import com.harman.utils.HarmanUtils;
 
 @RestController
 @RequestMapping("/cloudApp")
 public class TestController {
 
 	@RequestMapping(value = "/read", method = RequestMethod.GET)
-	public String readRecords(String device_id) {
+	public String read(String device_id) {
 		System.out.println("******************************");
 		MariaModel mariaModel = MariaModel.getInstance();
 		String responseResult = mariaModel.getDeviceInformation(device_id);
@@ -49,4 +50,48 @@ public class TestController {
 		}
 		return retunResponse.toString();
 	}
+
+	@RequestMapping(value = "/reqestcmd", method = RequestMethod.POST)
+	public @ResponseBody String requestCMD(@RequestBody String requestBody) {
+
+		JSONObject response = new JSONObject();
+		try {
+			JSONObject jsonObject = new JSONObject(requestBody);
+			String cmd = jsonObject.getString("cmd");
+			int seq = jsonObject.getInt("seq");
+			JSONObject syncDeviceReq=jsonObject.getJSONObject("syncDeviceReq");
+			JSONObject harmanDevice = syncDeviceReq.getJSONObject("harmanDevice");
+			String macAddress = harmanDevice.getString("macAddress");
+			int productId = harmanDevice.getInt("productId");
+			/*
+			 * String colorId = jsonObject.getString("colorId"); String
+			 * productName = jsonObject.getString("productName"); String
+			 * colorName = jsonObject.getString("colorName");
+			 */
+			/* create response code */
+
+			JSONObject deviceSession = new JSONObject();
+			deviceSession.put("deviceId", macAddress);
+			deviceSession.put("skey", HarmanUtils.generateSessionID(macAddress, productId));
+
+			JSONObject syncDeviceRes = new JSONObject();
+			syncDeviceRes.put("deviceSession", deviceSession);
+
+			response.put("cmd", cmd);
+			response.put("seq", seq);
+			response.put("errorMsg", "Success");
+			response.put("ret", 0);
+			response.put("syncDeviceRes", syncDeviceRes);
+
+		} catch (Exception e) {
+			response.put("cmd", "SyncDeviceCMD");
+			response.put("seq", 100);
+			response.put("errorMsg", "Fail");
+			response.put("ret", 0);
+			response.put("syncDeviceRes", "");
+			System.out.println("fail to parse");
+		}
+		return response.toString();
+	}
+
 }
