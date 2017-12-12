@@ -8,6 +8,5 @@ public class HarmanUtils {
 		Random rand = new Random();
 		int value = rand.nextInt(50);
 		return macid + productId + value;
-
 	}
 }
